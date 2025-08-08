@@ -1,199 +1,340 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Рейтинг городов Казахстана</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Рейтинг городов Казахстана — стрим</title>
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #111;
-        color: white;
-        text-align: center;
-        padding: 10px;
-    }
-    h1 { margin-bottom: 15px; font-size: clamp(20px, 5vw, 32px); }
-    .form {
-        margin-bottom: 15px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-    }
-    select, input, button {
-        padding: 10px;
-        font-size: clamp(14px, 4vw, 18px);
-        border-radius: 8px;
-        border: none;
-        outline: none;
-        width: 100%;
-        max-width: 350px;
-    }
-    button {
-        background: #28a745;
-        color: white;
-        font-weight: bold;
-        cursor: pointer;
-    }
-    button:hover {
-        background: #218838;
-    }
-    table {
-        border-collapse: collapse;
-        width: 100%;
-        max-width: 700px;
-        margin: auto;
-        font-size: clamp(14px, 3.5vw, 18px);
-    }
-    th, td {
-        border: 1px solid #444;
-        padding: 8px;
-    }
-    th {
-        background: #222;
-    }
+  :root{
+    --bg:#0f1113;
+    --card:#141617;
+    --muted:#9aa0a6;
+    --accent:#28a745;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: Inter,system-ui,Segoe UI,Roboto,Arial;
+    background:linear-gradient(180deg,#070708 0%, #0f1113 100%);
+    color:#fff;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    padding:14px;
+    text-align:center;
+  }
+  header{margin-bottom:12px}
+  h1{font-size:clamp(18px,4.8vw,28px);margin:6px 0}
+  .controls{
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:12px;
+  }
+  select,input,button{
+    border:0;border-radius:10px;
+    padding:10px 12px;
+    font-size:clamp(13px,3.2vw,16px);
+    outline:none;
+  }
+  select, input{background:var(--card); color:#fff; min-width:180px}
+  button{
+    background:var(--accent); color:#fff; font-weight:600; cursor:pointer;
+    box-shadow:0 4px 14px rgba(40,167,69,0.12);
+  }
+  button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06); color:var(--muted)}
+  button.warn{background:#e04b4b}
+  .table-wrap{
+    width:100%;
+    max-width:900px;
+    margin: 0 auto;
+    overflow:hidden;
+    border-radius:12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:clamp(13px,3vw,16px);
+  }
+  thead th{
+    text-align:left;
+    padding:12px;
+    background:rgba(255,255,255,0.03);
+    color:var(--muted);
+    font-weight:600;
+  }
+  tbody tr{background:transparent; transition:transform .15s ease, box-shadow .15s ease;}
+  tbody tr:not(.gold):not(.silver):not(.bronze):hover{transform:translateY(-3px); box-shadow:0 6px 18px rgba(0,0,0,0.6)}
+  td{padding:12px;border-top:1px solid rgba(255,255,255,0.03); vertical-align:middle}
 
-    /* Анимация сияния */
-    @keyframes shine {
-        0% { box-shadow: 0 0 5px gold, 0 0 10px gold; }
-        50% { box-shadow: 0 0 20px gold, 0 0 40px gold; }
-        100% { box-shadow: 0 0 5px gold, 0 0 10px gold; }
-    }
-    @keyframes shineSilver {
-        0% { box-shadow: 0 0 5px silver, 0 0 10px silver; }
-        50% { box-shadow: 0 0 20px silver, 0 0 40px silver; }
-        100% { box-shadow: 0 0 5px silver, 0 0 10px silver; }
-    }
-    @keyframes shineBronze {
-        0% { box-shadow: 0 0 5px #cd7f32, 0 0 10px #cd7f32; }
-        50% { box-shadow: 0 0 20px #cd7f32, 0 0 40px #cd7f32; }
-        100% { box-shadow: 0 0 5px #cd7f32, 0 0 10px #cd7f32; }
-    }
+  .place{
+    width:64px; font-weight:700;
+    text-align:center;
+  }
+  .city{
+    display:flex; align-items:center; gap:10px;
+  }
+  .medal{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:38px; height:38px; border-radius:50%; font-weight:700;
+    box-shadow:0 6px 20px rgba(0,0,0,0.5);
+  }
 
-    .gold {
-        background: linear-gradient(90deg, gold, #ffdf00);
-        color: black;
-        font-weight: bold;
-        animation: shine 1.5s infinite alternate;
-    }
-    .silver {
-        background: linear-gradient(90deg, silver, #dcdcdc);
-        color: black;
-        font-weight: bold;
-        animation: shineSilver 1.5s infinite alternate;
-    }
-    .bronze {
-        background: linear-gradient(90deg, #cd7f32, #b87333);
-        color: black;
-        font-weight: bold;
-        animation: shineBronze 1.5s infinite alternate;
-    }
+  /* shine animations */
+  @keyframes shineGold {
+    0% { box-shadow:0 0 6px 2px rgba(255,215,0,0.4); transform:translateY(0) }
+    50%{ box-shadow:0 0 28px 8px rgba(255,215,0,0.55); transform:translateY(-4px) }
+    100%{ box-shadow:0 0 6px 2px rgba(255,215,0,0.4); transform:translateY(0) }
+  }
+  @keyframes shineSilver {
+    0% { box-shadow:0 0 6px 2px rgba(192,192,192,0.35); transform:translateY(0) }
+    50%{ box-shadow:0 0 18px 6px rgba(192,192,192,0.5); transform:translateY(-3px) }
+    100%{ box-shadow:0 0 6px 2px rgba(192,192,192,0.35); transform:translateY(0) }
+  }
+  @keyframes shineBronze {
+    0% { box-shadow:0 0 6px 2px rgba(205,127,50,0.28); transform:translateY(0) }
+    50%{ box-shadow:0 0 18px 6px rgba(205,127,50,0.45); transform:translateY(-3px) }
+    100%{ box-shadow:0 0 6px 2px rgba(205,127,50,0.28); transform:translateY(0) }
+  }
 
-    /* Маленькие экраны */
-    @media (max-width: 480px) {
-        th:nth-child(3), td:nth-child(3) {
-            display: none; /* Скрываем колонку "Баллы" на очень маленьких экранах */
-        }
-    }
+  .gold .medal{ background:linear-gradient(135deg,#ffd84d,#ffdf7a); color:#2b2b2b; animation:shineGold 1.6s infinite alternate; }
+  .silver .medal{ background:linear-gradient(135deg,#e6e6e6,#cfcfcf); color:#222; animation:shineSilver 1.6s infinite alternate; }
+  .bronze .medal{ background:linear-gradient(135deg,#d18a4a,#b87333); color:#111; animation:shineBronze 1.6s infinite alternate; }
+
+  .num{ font-weight:700; min-width:70px; text-align:right; color:#fff }
+
+  /* mobile tweaks */
+  @media (max-width:600px){
+    .controls{gap:6px}
+    .place{width:46px; font-size:14px}
+    .medal{width:30px;height:30px;font-size:14px}
+    thead th{font-size:13px}
+    td{padding:10px}
+    /* hide points column on very small */
+    @media (max-width:420px){}
+  }
+  /* small helper row for actions */
+  .actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
+  .small{font-size:13px;color:var(--muted);margin-top:6px}
 </style>
 </head>
 <body>
+  <header>
+    <h1>🏆 Рейтинг городов Казахстана</h1>
+    <div class="small">Добавляй баллы — топ обновится сразу. Сохранение локально в браузере.</div>
+  </header>
 
-<h1>🏆 Рейтинг городов Казахстана</h1>
-
-<div class="form">
+  <div class="controls" role="form" aria-label="Добавить баллы">
     <select id="city"></select>
-    <input type="number" id="points" placeholder="Баллы (тенге)" min="1">
-    <button onclick="addPoints()">Добавить баллы</button>
-</div>
+    <input id="points" type="number" placeholder="Баллы (тенге)" min="1" />
+    <button id="addBtn">Добавить</button>
+    <button id="resetBtn" class="ghost">Сбросить</button>
+    <button id="downloadBtn" class="ghost">Экспорт</button>
+    <button id="importBtn" class="ghost">Импорт</button>
+    <input id="fileInput" type="file" accept="application/json" style="display:none" />
+  </div>
 
-<table id="scoreTable">
-    <thead>
+  <div class="table-wrap" role="table" aria-label="Рейтинг городов">
+    <table>
+      <thead>
         <tr>
-            <th>Место</th>
-            <th>Город</th>
-            <th>Баллы</th>
+          <th>Место</th>
+          <th>Город</th>
+          <th style="text-align:right;padding-right:18px">Баллы</th>
         </tr>
-    </thead>
-    <tbody></tbody>
-</table>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="actions small">Подсказка: используешь один и тот же браузер — очки сохранятся. Для OBS укажи файл:// путь или хостинг.</div>
 
 <script>
-    let cities = [
-        "Абай","Аксай","Аксу","Аксу-Аюлы","Актау","Актобе","Алга","Алматы","Арал","Аркалык",
-        "Арыс","Астана (столица)","Атагай","Атбасар","Атырау","Аягоз","Балхаш","Баутино",
-        "Бейнеу","Боровое","Боралдай","Булаево","Ерейментау","Есик","Есиль","Жанаозен",
-        "Жанатас","Жаркент","Жем","Жетысай","Жезказган","Житикара","Капчагай (Конаев)",
-        "Караганда","Каражал","Каратау","Каркаралинск","Кентау","Кокшетау","Косшы",
-        "Костанай","Кульсары","Курчатов","Лисаковск","Мамлютка","Макинск","Макат",
-        "Махамбет","Павлодар","Петропавловск","Приозёрск","Риддер","Рудный","Сарань",
-        "Сарканд","Сарыагаш","Сатпаев","Семей","Сергеевка","Степногорск","Талгар",
-        "Талдыкорган","Тараз","Текели","Темир","Темиртау","Туркестан","Уральск",
-        "Усть-Каменогорск","Шалкар","Шардара","Шахтинск","Шемонаиха","Шетпе","Шу","Шымкент"
-    ];
+/* === данные городов === */
+const cities = [
+ "Абай","Аксай","Аксу","Аксу-Аюлы","Актау","Актобе","Алга","Алматы","Арал","Аркалык",
+ "Арыс","Астана (столица)","Атагай","Атбасар","Атырау","Аягоз","Балхаш","Баутино",
+ "Бейнеу","Боровое","Боралдай","Булаево","Ерейментау","Есик","Есиль","Жанаозен",
+ "Жанатас","Жаркент","Жем","Жетысай","Жезказган","Житикара","Капчагай (Конаев)",
+ "Караганда","Каражал","Каратау","Каркаралинск","Кентау","Кокшетау","Косшы",
+ "Костанай","Кульсары","Курчатов","Лисаковск","Мамлютка","Макинск","Макат",
+ "Махамбет","Павлодар","Петропавловск","Приозёрск","Риддер","Рудный","Сарань",
+ "Сарканд","Сарыагаш","Сатпаев","Семей","Сергеевка","Степногорск","Талгар",
+ "Талдыкорган","Тараз","Текели","Темир","Темиртау","Туркестан","Уральск",
+ "Усть-Каменогорск","Шалкар","Шардара","Шахтинск","Шемонаиха","Шетпе","Шу","Шымкент"
+];
 
-    let scores = {};
-    cities.forEach(c => scores[c] = 0);
+/* ключ в localStorage */
+const STORAGE_KEY = "cityScores_v1";
 
-    let citySelect = document.getElementById("city");
-    cities.forEach(c => {
-        let option = document.createElement("option");
-        option.textContent = c;
-        citySelect.appendChild(option);
-    });
+/* инициализация scores */
+let scores = {};
+function initScores(){
+  cities.forEach(c=> scores[c]=0);
+}
 
-    function addPoints() {
-        let city = citySelect.value;
-        let points = parseInt(document.getElementById("points").value);
-        if (!points || points < 1) return alert("Введите корректное количество баллов");
-        scores[city] += points;
-        document.getElementById("points").value = "";
-        saveData();
-        updateTable();
-    }
-
-    function updateTable() {
-        let tbody = document.querySelector("#scoreTable tbody");
-        tbody.innerHTML = "";
-
-        let sorted = Object.entries(scores).sort((a,b) => b[1] - a[1]);
-
-        sorted.forEach((item, index) => {
-            let tr = document.createElement("tr");
-
-            let tdPlace = document.createElement("td");
-            tdPlace.textContent = index + 1;
-
-            let tdCity = document.createElement("td");
-            tdCity.textContent = item[0];
-
-            let tdPoints = document.createElement("td");
-            tdPoints.textContent = item[1];
-
-            tr.appendChild(tdPlace);
-            tr.appendChild(tdCity);
-            tr.appendChild(tdPoints);
-
-            if (index === 0) tr.classList.add("gold");
-            else if (index === 1) tr.classList.add("silver");
-            else if (index === 2) tr.classList.add("bronze");
-
-            tbody.appendChild(tr);
+/* загрузка из localStorage */
+function loadData(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(raw){
+    try{
+      const parsed = JSON.parse(raw);
+      // если структура норм — используем, иначе инициализируем
+      if(typeof parsed === "object" && parsed !== null){
+        // чтобы не потерять города, объединяем
+        initScores();
+        Object.keys(parsed).forEach(k=>{
+          if(k in scores) scores[k] = Number(parsed[k]) || 0;
         });
-    }
+        return;
+      }
+    }catch(e){}
+  }
+  initScores();
+}
 
-    function saveData() {
-        localStorage.setItem("cityScores", JSON.stringify(scores));
-    }
+/* сохранение */
+function saveData(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(scores));
+}
 
-    function loadData() {
-        let data = localStorage.getItem("cityScores");
-        if (data) scores = JSON.parse(data);
-    }
+/* DOM refs */
+const citySel = document.getElementById("city");
+const pointsInput = document.getElementById("points");
+const addBtn = document.getElementById("addBtn");
+const resetBtn = document.getElementById("resetBtn");
+const tbody = document.getElementById("tbody");
+const downloadBtn = document.getElementById("downloadBtn");
+const importBtn = document.getElementById("importBtn");
+const fileInput = document.getElementById("fileInput");
 
-    loadData();
-    updateTable();
+/* заполняем селект */
+function fillSelect(){
+  citySel.innerHTML = "";
+  cities.forEach(c=>{
+    const opt = document.createElement("option");
+    opt.value = c;
+    opt.textContent = c;
+    citySel.appendChild(opt);
+  });
+}
+
+/* добавить баллы */
+function addPoints(){
+  const city = citySel.value;
+  const pts = parseInt(pointsInput.value,10);
+  if(!city || !pts || pts <= 0){ alert("Введите корректное значение баллов."); return; }
+  scores[city] = (scores[city]||0) + pts;
+  pointsInput.value = "";
+  saveData();
+  updateTable();
+}
+
+/* сброс */
+function resetScores(){
+  if(!confirm("Подтвердите: очистить все очки у городов? Это действие нельзя отменить.")) return;
+  initScores();
+  saveData();
+  updateTable();
+}
+
+/* экспорт (скачать json) */
+function exportData(){
+  const blob = new Blob([JSON.stringify(scores, null, 2)], {type:"application/json;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "city_scores.json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+/* импорт (файл) */
+function importData(file){
+  const reader = new FileReader();
+  reader.onload = ()=> {
+    try{
+      const parsed = JSON.parse(reader.result);
+      if(typeof parsed !== "object" || parsed === null){ alert("Неверный формат файла"); return; }
+      // подтягиваем значения только для известных городов
+      Object.keys(parsed).forEach(k=>{
+        if(k in scores) scores[k] = Number(parsed[k]) || 0;
+      });
+      saveData();
+      updateTable();
+      alert("Импорт выполнен.");
+    }catch(e){
+      alert("Ошибка импорта: неверный JSON.");
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* обновление UI таблицы */
+function updateTable(){
+  tbody.innerHTML = "";
+  const sorted = Object.entries(scores).sort((a,b)=> b[1] - a[1]);
+  sorted.forEach(([city, pts], idx)=>{
+    const tr = document.createElement("tr");
+    // классы для топ3
+    if(idx === 0) tr.classList.add("gold");
+    else if(idx === 1) tr.classList.add("silver");
+    else if(idx === 2) tr.classList.add("bronze");
+
+    const tdPlace = document.createElement("td");
+    tdPlace.className = "place";
+    tdPlace.textContent = idx + 1;
+
+    const tdCity = document.createElement("td");
+    tdCity.className = "city";
+    // medal for top3
+    if(idx===0){
+      const m = document.createElement("span"); m.className="medal"; m.textContent = "🥇"; tdCity.appendChild(m);
+    }else if(idx===1){
+      const m = document.createElement("span"); m.className="medal"; m.textContent = "🥈"; tdCity.appendChild(m);
+    }else if(idx===2){
+      const m = document.createElement("span"); m.className="medal"; m.textContent = "🥉"; tdCity.appendChild(m);
+    }else{
+      const placeholder = document.createElement("span"); placeholder.style.width="38px"; placeholder.style.display="inline-block"; tdCity.appendChild(placeholder);
+    }
+    const name = document.createElement("span"); name.textContent = city; name.style.marginLeft = "6px";
+    tdCity.appendChild(name);
+
+    const tdPoints = document.createElement("td");
+    tdPoints.className = "num";
+    tdPoints.textContent = pts;
+
+    tr.appendChild(tdPlace);
+    tr.appendChild(tdCity);
+    tr.appendChild(tdPoints);
+    tbody.appendChild(tr);
+  });
+}
+
+/* события */
+addBtn.addEventListener("click", addPoints);
+pointsInput.addEventListener("keydown", (e)=>{ if(e.key === "Enter") addPoints(); });
+resetBtn.addEventListener("click", resetScores);
+downloadBtn.addEventListener("click", exportData);
+importBtn.addEventListener("click", ()=> fileInput.click());
+fileInput.addEventListener("change", (ev)=>{
+  const file = ev.target.files && ev.target.files[0];
+  if(file) importData(file);
+  fileInput.value = "";
+});
+
+/* init */
+fillSelect();
+loadData();
+updateTable();
+
+/* expose for console debugging (optional) */
+window._scores = scores;
+window._save = saveData;
+window._reset = resetScores;
 </script>
-
 </body>
 </html>
