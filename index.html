@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Рейтинг городов Казахстана</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #111;
+        color: white;
+        text-align: center;
+        padding: 10px;
+    }
+    h1 { margin-bottom: 15px; font-size: clamp(20px, 5vw, 32px); }
+    .form {
+        margin-bottom: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+    select, input, button {
+        padding: 10px;
+        font-size: clamp(14px, 4vw, 18px);
+        border-radius: 8px;
+        border: none;
+        outline: none;
+        width: 100%;
+        max-width: 350px;
+    }
+    button {
+        background: #28a745;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    button:hover {
+        background: #218838;
+    }
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        max-width: 700px;
+        margin: auto;
+        font-size: clamp(14px, 3.5vw, 18px);
+    }
+    th, td {
+        border: 1px solid #444;
+        padding: 8px;
+    }
+    th {
+        background: #222;
+    }
+
+    /* Анимация сияния */
+    @keyframes shine {
+        0% { box-shadow: 0 0 5px gold, 0 0 10px gold; }
+        50% { box-shadow: 0 0 20px gold, 0 0 40px gold; }
+        100% { box-shadow: 0 0 5px gold, 0 0 10px gold; }
+    }
+    @keyframes shineSilver {
+        0% { box-shadow: 0 0 5px silver, 0 0 10px silver; }
+        50% { box-shadow: 0 0 20px silver, 0 0 40px silver; }
+        100% { box-shadow: 0 0 5px silver, 0 0 10px silver; }
+    }
+    @keyframes shineBronze {
+        0% { box-shadow: 0 0 5px #cd7f32, 0 0 10px #cd7f32; }
+        50% { box-shadow: 0 0 20px #cd7f32, 0 0 40px #cd7f32; }
+        100% { box-shadow: 0 0 5px #cd7f32, 0 0 10px #cd7f32; }
+    }
+
+    .gold {
+        background: linear-gradient(90deg, gold, #ffdf00);
+        color: black;
+        font-weight: bold;
+        animation: shine 1.5s infinite alternate;
+    }
+    .silver {
+        background: linear-gradient(90deg, silver, #dcdcdc);
+        color: black;
+        font-weight: bold;
+        animation: shineSilver 1.5s infinite alternate;
+    }
+    .bronze {
+        background: linear-gradient(90deg, #cd7f32, #b87333);
+        color: black;
+        font-weight: bold;
+        animation: shineBronze 1.5s infinite alternate;
+    }
+
+    /* Маленькие экраны */
+    @media (max-width: 480px) {
+        th:nth-child(3), td:nth-child(3) {
+            display: none; /* Скрываем колонку "Баллы" на очень маленьких экранах */
+        }
+    }
+</style>
+</head>
+<body>
+
+<h1>🏆 Рейтинг городов Казахстана</h1>
+
+<div class="form">
+    <select id="city"></select>
+    <input type="number" id="points" placeholder="Баллы (тенге)" min="1">
+    <button onclick="addPoints()">Добавить баллы</button>
+</div>
+
+<table id="scoreTable">
+    <thead>
+        <tr>
+            <th>Место</th>
+            <th>Город</th>
+            <th>Баллы</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+    let cities = [
+        "Абай","Аксай","Аксу","Аксу-Аюлы","Актау","Актобе","Алга","Алматы","Арал","Аркалык",
+        "Арыс","Астана (столица)","Атагай","Атбасар","Атырау","Аягоз","Балхаш","Баутино",
+        "Бейнеу","Боровое","Боралдай","Булаево","Ерейментау","Есик","Есиль","Жанаозен",
+        "Жанатас","Жаркент","Жем","Жетысай","Жезказган","Житикара","Капчагай (Конаев)",
+        "Караганда","Каражал","Каратау","Каркаралинск","Кентау","Кокшетау","Косшы",
+        "Костанай","Кульсары","Курчатов","Лисаковск","Мамлютка","Макинск","Макат",
+        "Махамбет","Павлодар","Петропавловск","Приозёрск","Риддер","Рудный","Сарань",
+        "Сарканд","Сарыагаш","Сатпаев","Семей","Сергеевка","Степногорск","Талгар",
+        "Талдыкорган","Тараз","Текели","Темир","Темиртау","Туркестан","Уральск",
+        "Усть-Каменогорск","Шалкар","Шардара","Шахтинск","Шемонаиха","Шетпе","Шу","Шымкент"
+    ];
+
+    let scores = {};
+    cities.forEach(c => scores[c] = 0);
+
+    let citySelect = document.getElementById("city");
+    cities.forEach(c => {
+        let option = document.createElement("option");
+        option.textContent = c;
+        citySelect.appendChild(option);
+    });
+
+    function addPoints() {
+        let city = citySelect.value;
+        let points = parseInt(document.getElementById("points").value);
+        if (!points || points < 1) return alert("Введите корректное количество баллов");
+        scores[city] += points;
+        document.getElementById("points").value = "";
+        saveData();
+        updateTable();
+    }
+
+    function updateTable() {
+        let tbody = document.querySelector("#scoreTable tbody");
+        tbody.innerHTML = "";
+
+        let sorted = Object.entries(scores).sort((a,b) => b[1] - a[1]);
+
+        sorted.forEach((item, index) => {
+            let tr = document.createElement("tr");
+
+            let tdPlace = document.createElement("td");
+            tdPlace.textContent = index + 1;
+
+            let tdCity = document.createElement("td");
+            tdCity.textContent = item[0];
+
+            let tdPoints = document.createElement("td");
+            tdPoints.textContent = item[1];
+
+            tr.appendChild(tdPlace);
+            tr.appendChild(tdCity);
+            tr.appendChild(tdPoints);
+
+            if (index === 0) tr.classList.add("gold");
+            else if (index === 1) tr.classList.add("silver");
+            else if (index === 2) tr.classList.add("bronze");
+
+            tbody.appendChild(tr);
+        });
+    }
+
+    function saveData() {
+        localStorage.setItem("cityScores", JSON.stringify(scores));
+    }
+
+    function loadData() {
+        let data = localStorage.getItem("cityScores");
+        if (data) scores = JSON.parse(data);
+    }
+
+    loadData();
+    updateTable();
+</script>
+
+</body>
+</html>
